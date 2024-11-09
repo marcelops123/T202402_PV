@@ -22,6 +22,8 @@ public class FormPrincipal extends javax.swing.JFrame {
         
         String caminho = "/Imagens/";
         
+        /* Deve ser criada uma pasta "resources" no mesmo nível da pasta "java". 
+           e as imagens devem ser colocadas dentro desta pasta.                 */
         icones[0] = new ImageIcon(getClass().getResource(caminho + nomes[0]));
         icones[1] = new ImageIcon(getClass().getResource(caminho + nomes[1]));
         icones[2] = new ImageIcon(getClass().getResource(caminho + nomes[2]));

@@ -17,6 +17,8 @@ public class FormPrincipal extends javax.swing.JFrame {
     public FormPrincipal() {
         initComponents();
         
+        /* ATENÇÃO! Lembre-se de colocar na variável "caminho_", o caminho onde
+           as imagens se encontram no seu computador.                           */
         String caminho_ = 
                 "/home/edwar/Documents/Files/IFTM/PV/Unidade04_JComboBox_CaminhoAbsoluto/src/main/java/Imagens/";
                 
