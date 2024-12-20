@@ -19,11 +19,12 @@ public class GerenciaCarros {
      * @param anoFab
      * @param anoMod
      * @param preco
+     * @param refenciaParaVeiculoCriado
      * @return retorna null caso o procedimento tenha ocorrido com sucesso. Caso
      * contrário retorna uma Stringr descrevendo o erro ocorrido.
      */
     public String incluir(String marca, String modelo, int anoFab, int anoMod,
-            float preco){
+            float preco, Carro[] refenciaParaVeiculoCriado){
         String log = ""; // registra a ocorrência de problemas
         
         if(marca.isEmpty())
@@ -41,8 +42,13 @@ public class GerenciaCarros {
                         if(preco == 0)
                             log = "Preço não preenchido";
                         else{
+
                             Carro carro = new Carro(marca, modelo, anoFab, 
                                 anoMod, preco);
+
+                            /* Devolve a referência para o objeto 
+                               "carro" que acabou de ser criado.  */
+                            refenciaParaVeiculoCriado[0] = carro;
                             
                             carros.add(carro);
                         }
@@ -50,23 +56,27 @@ public class GerenciaCarros {
         return log;
     }
     
-    public String excluir(int posicao){
+    public String excluir(Carro car, Carro[] veiculoAnteriorOuPosterior){
         String log = "";
-        
-        if((posicao < 0) || (posicao >= carros.size()))
-            log = "Posição não existe.";
+                
+        if(car == null)
+            log = "Veículo não existe.";
         else{
-            carros.remove(posicao);
+            veiculoAnteriorOuPosterior[0] = veiculoAnterior(car);
+            if(veiculoAnteriorOuPosterior[0] == null)
+                veiculoAnteriorOuPosterior[0] = veiculoPosterior(car);
+            
+            carros.remove(car);
         }
         
         return log;
     }
     
-    public String alterar(int posicao, String marca, String modelo, int anoFab, 
+    public String alterar(Carro atual, String marca, String modelo, int anoFab, 
             int anoMod, float preco){
         String log = ""; // registra a ocorrência de problemas
         
-        if((posicao < 0) || (posicao >= carros.size()))
+        if(atual == null)
             log = "Posição não existe.";
         else
             if(marca.isEmpty())
@@ -84,14 +94,48 @@ public class GerenciaCarros {
                             if(preco == 0)
                                 log = "Preço não preenchido";
                             else{
-                                carros.get(posicao).setMarca(marca);
-                                carros.get(posicao).setModelo(modelo);
-                                carros.get(posicao).setAnoFabricacao(anoFab);
-                                carros.get(posicao).setAnoModelo(anoMod);
-                                carros.get(posicao).setPreco(preco);
+                                int pos = carros.indexOf(atual);
+        
+                                carros.get(pos).setMarca(marca);
+                                carros.get(pos).setModelo(modelo);
+                                carros.get(pos).setAnoFabricacao(anoFab);
+                                carros.get(pos).setAnoModelo(anoMod);
+                                carros.get(pos).setPreco(preco);
                             }
         
         return log;
+    }
+    
+    public Carro primeiroVeiculo(){
+        if(carros.isEmpty())
+            return null;
+        else
+            return carros.getFirst();
+    }
+    
+    public Carro veiculoAnterior(Carro atual){
+        int pos = carros.indexOf(atual);
+        
+        if(pos > 0)
+            return carros.get(pos - 1);
+        else
+            return null;
+    }
+    
+    public Carro veiculoPosterior(Carro atual){
+        int pos = carros.indexOf(atual);
+        
+        if(pos < (carros.size() - 1))
+            return carros.get(pos + 1);
+        else
+            return null;
+    }
+    
+    public Carro ultimoVeiculo(){
+        if(carros.isEmpty())
+            return null;
+        else
+            return carros.getLast();
     }
     
     public Carro consultar(int posicao){

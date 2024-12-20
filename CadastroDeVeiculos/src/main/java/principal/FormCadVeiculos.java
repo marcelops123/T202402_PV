@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package principal;
 
 import java.time.LocalDate;
@@ -16,6 +12,9 @@ public class FormCadVeiculos extends javax.swing.JFrame {
     
     private GerenciaCarros gc;
     private ArrayList<Carro> carros;
+    private Carro ultimoVeiculoAcessado;
+    private boolean flagBotaoNovoClicado;
+    private boolean flagBotaoAlterarClicado;
 
     /**
      * Creates new form FormCadVeiculos
@@ -27,6 +26,12 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         iniciaBotoes();
         habDesabNavegacao(false);
         habDesabTela(false);
+        ultimoVeiculoAcessado = null;
+        flagBotaoAlterarClicado = false;
+        flagBotaoNovoClicado = false;
+        
+        /* Componente não está funcionando corretamente. */
+        ftfPreco.setVisible(false);
     }
 
     private void iniciaBotoes(){
@@ -49,10 +54,16 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         tfModelo.setEnabled(valor);
         spnAnoFab.setEnabled(valor);
         spnAnoMod.setEnabled(valor);
-        ftfPreco.setEnabled(valor);
+        tfPreco.setEnabled(valor);
+//        ftfPreco.setEnabled(valor);
+        
+        if(valor && tfMarca.isFocusable())
+            tfMarca.requestFocus();
     }
     
     public void btnNovoClicado(){
+        limpaFormulario();
+        
         habDesabTela(true);
         habDesabNavegacao(false);
         btnNovo.setEnabled(false);
@@ -60,6 +71,8 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         btnCancelar.setEnabled(true);
         btnExcluir.setEnabled(false);
         btnAlterar.setEnabled(false);
+        
+        flagBotaoNovoClicado = true;
     }
     
     public void btnSalvarClicado(){
@@ -87,6 +100,9 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         btnNovo.setEnabled(true);
         btnSalvar.setEnabled(false);
         btnCancelar.setEnabled(false);
+        
+        flagBotaoAlterarClicado = false;
+        flagBotaoNovoClicado = false;
     }
     
     public void btnExcluirClicado(){
@@ -114,6 +130,8 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         btnCancelar.setEnabled(true);
         btnExcluir.setEnabled(false);
         btnAlterar.setEnabled(false);
+        
+        flagBotaoAlterarClicado = true;
     }
         
     /**
@@ -130,6 +148,16 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         spnAnoFab = new javax.swing.JSpinner();
         spnAnoMod = new javax.swing.JSpinner();
         ftfPreco = new javax.swing.JFormattedTextField();
+        try {
+            javax.swing.text.MaskFormatter mask = new javax.swing.text.MaskFormatter("#,##0.00");
+            mask.setPlaceholderCharacter('_');
+            mask.setValueClass(Double.class);
+            ftfPreco = new javax.swing.JFormattedTextField(mask);
+            ftfPreco.setValue(0.0);
+        } catch (java.text.ParseException ex) {
+            ex.printStackTrace();
+            ftfPreco = new javax.swing.JFormattedTextField(); // Cria um campo simples em caso de erro
+        }
         lblMarca = new javax.swing.JLabel();
         lblModelo = new javax.swing.JLabel();
         lblAnoFab = new javax.swing.JLabel();
@@ -144,14 +172,19 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         btnUltimo = new javax.swing.JButton();
         btnAnterior = new javax.swing.JButton();
         btnCancelar = new javax.swing.JButton();
+        tfPreco = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Cadastro de Veículos");
 
         spnAnoFab.setValue(2000);
 
         spnAnoMod.setValue(2000);
 
         ftfPreco.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(java.text.NumberFormat.getCurrencyInstance())));
+        ftfPreco.setEnabled(false);
+        ftfPreco.setFocusable(false);
+        ftfPreco.setRequestFocusEnabled(false);
 
         lblMarca.setDisplayedMnemonic('M');
         lblMarca.setLabelFor(tfMarca);
@@ -206,12 +239,32 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         });
 
         btnPrimeiro.setText("<<");
+        btnPrimeiro.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrimeiroActionPerformed(evt);
+            }
+        });
 
         btnProximo.setText(">");
+        btnProximo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnProximoActionPerformed(evt);
+            }
+        });
 
         btnUltimo.setText(">>");
+        btnUltimo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUltimoActionPerformed(evt);
+            }
+        });
 
         btnAnterior.setText("<");
+        btnAnterior.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAnteriorActionPerformed(evt);
+            }
+        });
 
         btnCancelar.setMnemonic('C');
         btnCancelar.setText("Cancelar");
@@ -226,50 +279,55 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addComponent(btnNovo)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnPrimeiro, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnAnterior, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnProximo, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnUltimo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(107, 107, 107))
+            .addGroup(layout.createSequentialGroup()
                 .addGap(36, 36, 36)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblPreco)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(tfMarca, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(lblMarca)
-                                    .addComponent(lblAnoFab))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(spnAnoFab)
-                                .addGap(75, 75, 75)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblAnoMod)
-                            .addComponent(lblModelo)
-                            .addComponent(tfModelo, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(spnAnoMod, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(ftfPreco, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(27, 27, 27)
-                .addComponent(btnNovo, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnPrimeiro, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnSalvar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnAnterior, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnProximo, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnUltimo, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnSalvar, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnCancelar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnAlterar, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnAlterar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnExcluir)
-                        .addGap(26, 26, 26))))
+                        .addGap(14, 14, 14))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblPreco)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(tfMarca, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(lblMarca)
+                                            .addComponent(lblAnoFab))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(spnAnoFab)
+                                        .addGap(75, 75, 75)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lblAnoMod)
+                                    .addComponent(lblModelo)
+                                    .addComponent(tfModelo, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(spnAnoMod, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(tfPreco, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(93, 93, 93)
+                        .addComponent(ftfPreco, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -293,7 +351,9 @@ public class FormCadVeiculos extends javax.swing.JFrame {
                 .addGap(24, 24, 24)
                 .addComponent(lblPreco)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ftfPreco, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ftfPreco, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tfPreco, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnNovo)
@@ -318,10 +378,15 @@ public class FormCadVeiculos extends javax.swing.JFrame {
     }//GEN-LAST:event_btnNovoActionPerformed
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
-        if(tfMarca.getText().isEmpty())
+        String marca, modelo, log = "";
+        float preco;
+        
+        marca = tfMarca.getText();
+        if(marca.isEmpty())
             JOptionPane.showMessageDialog(this, "Marca deve ser preenchida.");
-        else
-            if(tfModelo.getText().isEmpty())
+        else{
+            modelo = tfModelo.getText();
+            if(modelo.isEmpty())
                 JOptionPane.showMessageDialog(this, "Modelo deve ser preenchido.");
             else{
                 int anoFab = (int)spnAnoFab.getValue();
@@ -332,23 +397,122 @@ public class FormCadVeiculos extends javax.swing.JFrame {
                     if((anoMod < 1900) && (anoFab > LocalDate.now().getYear()))
                         JOptionPane.showMessageDialog(this, "Ano Fabricação inválido.");
                     else{
-
+//                        preco = Float.parseFloat(ftfPreco.getText().trim());
+                        preco = Float.parseFloat(tfPreco.getText().trim());
+                        
+                        /* Para pegar uma referência criada dentro do método 
+                           sem ser pelo retorno no mesmo.                    */
+                        Carro pegaReferenciaDoCarroCriado[] = new Carro[1];
+                        
+                        if(flagBotaoNovoClicado){
+                            log = gc.incluir(marca, modelo, anoFab, anoMod, preco, 
+                                    pegaReferenciaDoCarroCriado);
+                            ultimoVeiculoAcessado = pegaReferenciaDoCarroCriado[0];
+                            
+                            flagBotaoNovoClicado = false;
+                            
+                            JOptionPane.showMessageDialog(this, "Inclusão efetuada com sucesso.");
+                        }
+                        
+                        if(flagBotaoAlterarClicado){
+                            log = gc.alterar(ultimoVeiculoAcessado, marca, modelo, 
+                                    anoFab, anoMod, preco);
+                            
+                            flagBotaoAlterarClicado = false;
+                            
+                            JOptionPane.showMessageDialog(this, "Alteração efetuada com sucesso.");
+                        }
                     }
                 }
             }
+        }
+        
+        btnSalvarClicado();
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
-        // TODO add your handling code here:
+        if(ultimoVeiculoAcessado == null)
+            limpaFormulario();
+        else
+            preencheFormulario(ultimoVeiculoAcessado);
+        
+        btnCancelarClicado();
     }//GEN-LAST:event_btnCancelarActionPerformed
 
     private void btnAlterarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlterarActionPerformed
-        // TODO add your handling code here:
+        btnAlterarClicado();
     }//GEN-LAST:event_btnAlterarActionPerformed
 
     private void btnExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcluirActionPerformed
-        // TODO add your handling code here:
+        Carro[] veiculoAnteriorOuPosterior = new Carro[1];
+        String log;
+        
+        if(JOptionPane.YES_OPTION ==
+                JOptionPane.showConfirmDialog(this,
+                "Confirma exclusão?", "Confirmação de exclusão de veículo",
+                JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE)){
+            log = gc.excluir(ultimoVeiculoAcessado,veiculoAnteriorOuPosterior);
+            
+            if(log.equals("")){
+                if(veiculoAnteriorOuPosterior[0] == null){
+                    limpaFormulario();
+                }
+                else{
+                    ultimoVeiculoAcessado = veiculoAnteriorOuPosterior[0];
+                    preencheFormulario(ultimoVeiculoAcessado);
+                }
+            }
+            else
+                JOptionPane.showMessageDialog(this, "Problema na exclusão. Erro: " + log, 
+                        "Erro na exclusão", JOptionPane.ERROR_MESSAGE);
+        }
+        else
+            JOptionPane.showMessageDialog(this, "Confirmação não excluída.");
+     
+        btnExcluirClicado();
     }//GEN-LAST:event_btnExcluirActionPerformed
+
+    private void btnPrimeiroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrimeiroActionPerformed
+        ultimoVeiculoAcessado = gc.primeiroVeiculo();
+        if(ultimoVeiculoAcessado != null)
+            preencheFormulario(ultimoVeiculoAcessado);
+    }//GEN-LAST:event_btnPrimeiroActionPerformed
+
+    private void btnAnteriorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnteriorActionPerformed
+        ultimoVeiculoAcessado = gc.veiculoAnterior(ultimoVeiculoAcessado);
+        if(ultimoVeiculoAcessado != null)
+            preencheFormulario(ultimoVeiculoAcessado);
+    }//GEN-LAST:event_btnAnteriorActionPerformed
+
+    private void btnProximoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProximoActionPerformed
+        ultimoVeiculoAcessado = gc.veiculoPosterior(ultimoVeiculoAcessado);
+        if(ultimoVeiculoAcessado != null)
+            preencheFormulario(ultimoVeiculoAcessado);
+    }//GEN-LAST:event_btnProximoActionPerformed
+
+    private void btnUltimoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUltimoActionPerformed
+        ultimoVeiculoAcessado = gc.ultimoVeiculo();
+        if(ultimoVeiculoAcessado != null)
+            preencheFormulario(ultimoVeiculoAcessado);
+    }//GEN-LAST:event_btnUltimoActionPerformed
+
+    private void preencheFormulario(Carro car){
+        tfMarca.setText(car.getMarca());
+        tfModelo.setText(car.getModelo());
+        spnAnoFab.setValue(car.getAnoFabricacao());
+        spnAnoMod.setValue(car.getAnoModelo());
+        tfPreco.setText(car.getPreco() + "");
+//        ftfPreco.setValue(car.getPreco());
+    }
+
+    private void limpaFormulario(){
+        tfMarca.setText("");
+        tfModelo.setText("");
+        spnAnoFab.setValue(2000);
+        spnAnoMod.setValue(2000);
+        tfPreco.setText("");
+//        ftfPreco.setValue(0);
+    }
 
     /**
      * @param args the command line arguments
@@ -405,5 +569,6 @@ public class FormCadVeiculos extends javax.swing.JFrame {
     private javax.swing.JSpinner spnAnoMod;
     private javax.swing.JTextField tfMarca;
     private javax.swing.JTextField tfModelo;
+    private javax.swing.JTextField tfPreco;
     // End of variables declaration//GEN-END:variables
 }
