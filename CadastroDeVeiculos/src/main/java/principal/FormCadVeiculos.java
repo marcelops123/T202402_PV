@@ -3,6 +3,10 @@ package principal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 /**
  *
@@ -32,6 +36,7 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         
         /* Componente não está funcionando corretamente. */
         ftfPreco.setVisible(false);
+        configurarTfPreco();
     }
 
     private void iniciaBotoes(){
@@ -398,7 +403,8 @@ public class FormCadVeiculos extends javax.swing.JFrame {
                         JOptionPane.showMessageDialog(this, "Ano Fabricação inválido.");
                     else{
 //                        preco = Float.parseFloat(ftfPreco.getText().trim());
-                        preco = Float.parseFloat(tfPreco.getText().trim());
+                        String numericText = tfPreco.getText().replaceAll("[^0-9]", "");
+                        preco = Float.parseFloat(numericText) / 100;
                         
                         /* Para pegar uma referência criada dentro do método 
                            sem ser pelo retorno no mesmo.                    */
@@ -571,4 +577,40 @@ public class FormCadVeiculos extends javax.swing.JFrame {
     private javax.swing.JTextField tfModelo;
     private javax.swing.JTextField tfPreco;
     // End of variables declaration//GEN-END:variables
+
+private void configurarTfPreco() {
+    ((AbstractDocument) tfPreco.getDocument()).setDocumentFilter(new CurrencyFilter());
+    tfPreco.addFocusListener(new java.awt.event.FocusAdapter() {
+        @Override
+        public void focusLost(java.awt.event.FocusEvent e) {
+            String numericText = tfPreco.getText().replaceAll("[^0-9]", "");
+            long value = numericText.isEmpty() ? 0 : Long.parseLong(numericText);
+            tfPreco.setText("R$" + (value / 100) + "," + String.format("%02d", value % 100));
+        }
+    });
+}
+
+}
+
+
+class CurrencyFilter extends DocumentFilter {
+
+    @Override
+    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+        String currentText = fb.getDocument().getText(0, fb.getDocument().getLength());
+        String newText = removeNonNumericChars(currentText.substring(0, offset) + text + currentText.substring(offset + length));
+        fb.replace(0, fb.getDocument().getLength(), formatCurrency(newText), attrs);
+    }
+
+    private String removeNonNumericChars(String text) {
+        return text.replaceAll("[^0-9]", "");
+    }
+
+    private String formatCurrency(String text) {
+        if (text.isEmpty()) {
+            return "R$0,00";
+        }
+        long value = Long.parseLong(text);
+        return "R$" + (value / 100) + "," + String.format("%02d", value % 100);
+    }
 }
