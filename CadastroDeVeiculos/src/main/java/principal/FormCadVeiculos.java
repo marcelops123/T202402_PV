@@ -507,7 +507,8 @@ public class FormCadVeiculos extends javax.swing.JFrame {
         tfModelo.setText(car.getModelo());
         spnAnoFab.setValue(car.getAnoFabricacao());
         spnAnoMod.setValue(car.getAnoModelo());
-        tfPreco.setText(car.getPreco() + "");
+        long preco = Math.round(car.getPreco() * 100);
+        tfPreco.setText("R$" + (preco / 100) + "," + String.format("%02d", preco % 100));
 //        ftfPreco.setValue(car.getPreco());
     }
 
